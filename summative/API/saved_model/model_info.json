@@ -1,0 +1,15 @@
+{
+  "model_name": "Linear Regression (SGD)",
+  "r2": 0.9999748556505996,
+  "rmse": 30.386230542403343,
+  "features": [
+    "year",
+    "log_area",
+    "log_production",
+    "yield_lag1",
+    "yield_lag2",
+    "yield_rolling3",
+    "crop_encoded",
+    "decade"
+  ]
+}
