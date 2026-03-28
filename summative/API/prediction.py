@@ -3,8 +3,10 @@ import numpy as np
 import pandas as pd
 import joblib
 
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
 app = FastAPI(
@@ -20,6 +22,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Validation error handler ──────────────────────────────────────────────────
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": f"Validation error: {exc.errors()}"},
+    )
 
 MODEL_DIR = "saved_model"
 
@@ -103,18 +113,8 @@ def list_crops():
 
 @app.post("/predict", tags=["Prediction"], response_model=PredictionResponse)
 def predict(data: CropInput):
-    """
-    Predict crop yield (hg/ha) for Rwanda given farm inputs.
-    - year: harvest year (1961-2030)
-    - area_harvested: hectares (>0)
-    - production: tonnes (>0)
-    - yield_lag1: last year yield hg/ha (>0)
-    - yield_lag2: 2 years ago yield hg/ha (>0)
-    - yield_rolling3: 3-year average yield hg/ha (>0)
-    - crop_name: one of 35 Rwanda crops
-    """
     try:
-        scaled   = build_features(data)
+        scaled    = build_features(data)
         predicted = max(0.0, float(model.predict(scaled)[0]))
         return PredictionResponse(
             predicted_yield_hg_ha=round(predicted, 2),
@@ -128,10 +128,6 @@ def predict(data: CropInput):
 
 @app.post("/retrain", tags=["Retraining"], response_model=RetrainResponse)
 async def retrain(file: UploadFile = File(...)):
-    """
-    Upload a new FAOSTAT-format CSV to retrain the model on fresh data.
-    Artifacts (model, scaler, encoder) are updated in-place.
-    """
     global model, scaler, le, FEATURES
     tmp_path = f"/tmp/{file.filename}"
     with open(tmp_path, "wb") as f:
