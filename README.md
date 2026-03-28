@@ -9,7 +9,7 @@ Click the link below to access the live API and test predictions:
 **[https://rwanda-crop-yield.onrender.com/docs](https://rwanda-crop-yield.onrender.com/docs)**
 
 ## Video Demo
-**[https://youtu.be/bEeHgEo1eHM]()**
+**[https://youtu.be/bEeHgEo1eHM](https://youtu.be/bEeHgEo1eHM)**
 
 ## How to Run the Mobile App
 
