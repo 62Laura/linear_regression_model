@@ -36,9 +36,7 @@ class PredictionPage extends StatefulWidget {
 }
 
 class _PredictionPageState extends State<PredictionPage> {
-  // ── API URL — replace with your Render URL after deployment ──────────────
-  static const String apiUrl = 'https://YOUR-APP.onrender.com/predict';
-
+static const String apiUrl = 'https://rwanda-crop-yield.onrender.com/predict';
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
@@ -96,11 +94,11 @@ class _PredictionPageState extends State<PredictionPage> {
     try {
       final body = jsonEncode({
         'year':           int.parse(_yearCtrl.text.trim()),
-        'area_harvested': double.parse(_areaCtrl.text.trim()),
-        'production':     double.parse(_productionCtrl.text.trim()),
-        'yield_lag1':     double.parse(_lag1Ctrl.text.trim()),
-        'yield_lag2':     double.parse(_lag2Ctrl.text.trim()),
-        'yield_rolling3': double.parse(_rolling3Ctrl.text.trim()),
+        'area_harvested': double.tryParse(_areaCtrl.text.trim()) ?? 0.0,
+        'production':     double.tryParse(_productionCtrl.text.trim()) ?? 0.0,
+        'yield_lag1':     double.tryParse(_lag1Ctrl.text.trim()) ?? 0.0,
+        'yield_lag2':     double.tryParse(_lag2Ctrl.text.trim()) ?? 0.0,
+        'yield_rolling3': double.tryParse(_rolling3Ctrl.text.trim()) ?? 0.0,
         'crop_name':      _selectedCrop,
       });
 
@@ -108,7 +106,8 @@ class _PredictionPageState extends State<PredictionPage> {
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json'},
         body: body,
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(const Duration(seconds: 80));
+
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -158,7 +157,6 @@ class _PredictionPageState extends State<PredictionPage> {
     });
   }
 
-  // ── Reusable input field ──────────────────────────────────────────────────
   Widget _buildField({
     required TextEditingController controller,
     required String label,
@@ -217,7 +215,6 @@ class _PredictionPageState extends State<PredictionPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
 
-                // ── Header card ─────────────────────────────────────────────
                 Container(
                   padding: const EdgeInsets.all(14),
                   margin: const EdgeInsets.only(bottom: 20),
@@ -234,7 +231,6 @@ class _PredictionPageState extends State<PredictionPage> {
                   ),
                 ),
 
-                // ── Section: Basic Info ──────────────────────────────────────
                 _sectionTitle('Basic Information'),
                 const SizedBox(height: 10),
 
@@ -251,7 +247,6 @@ class _PredictionPageState extends State<PredictionPage> {
                   },
                 ),
 
-                // Crop dropdown
                 Padding(
                   padding: const EdgeInsets.only(bottom: 14),
                   child: DropdownButtonFormField<String>(
@@ -271,7 +266,6 @@ class _PredictionPageState extends State<PredictionPage> {
                   ),
                 ),
 
-                // ── Section: Farm Data ───────────────────────────────────────
                 _sectionTitle('Farm Data'),
                 const SizedBox(height: 10),
 
@@ -299,7 +293,6 @@ class _PredictionPageState extends State<PredictionPage> {
                   },
                 ),
 
-                // ── Section: Historical Yield ────────────────────────────────
                 _sectionTitle('Historical Yield (hg/ha)'),
                 const SizedBox(height: 10),
 
@@ -341,7 +334,6 @@ class _PredictionPageState extends State<PredictionPage> {
 
                 const SizedBox(height: 8),
 
-                // ── Buttons ─────────────────────────────────────────────────
                 Row(
                   children: [
                     Expanded(
@@ -381,7 +373,6 @@ class _PredictionPageState extends State<PredictionPage> {
 
                 const SizedBox(height: 20),
 
-                // ── Result Display Area ──────────────────────────────────────
                 if (_resultText.isNotEmpty)
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
